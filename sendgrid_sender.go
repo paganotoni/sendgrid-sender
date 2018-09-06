@@ -40,7 +40,7 @@ func (ps SendgridSender) Send(m mail.Message) error {
 	html := smail.NewContent("text/html", m.Bodies[0].Content)
 	text := smail.NewContent("text/plain", m.Bodies[1].Content)
 	mm.AddPersonalizations(p)
-	mm.AddContent(html, text)
+	mm.AddContent(text, html)
 
 	_, err := ps.client.Send(mm)
 	return err
