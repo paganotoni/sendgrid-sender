@@ -13,12 +13,10 @@ import (
 )
 
 var sender mail.Sender
-var hcomposer hermes.Hermes
 
 func init() {
-	serverToken := envy.Get("Sendgrid_SERVER_TOKEN", "")
-	accountToken := envy.Get("Sendgrid_ACCOUNT_TOKEN", "")
-	sender = ssender.NewSendgridSender(serverToken, accountToken, false)
+	APIKey := envy.Get("SENDGRID_API_KEY", "")
+	sender = ssender.NewSendgridSender(APIKey)
 }
 ```
 
