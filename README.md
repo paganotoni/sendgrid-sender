@@ -1,6 +1,6 @@
 ### Sendgrid Buffalo Sender
 
-This is a [buffalo](github.com/gobuffalo/buffalo) sender for the [Sendgrid](https://https://sendgrid.com//) email service.
+This is a [buffalo](github.com/gobuffalo/buffalo) sender for the [Sendgrid](https://sendgrid.com) email service.
 
 #### How to use
 
