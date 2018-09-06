@@ -6,7 +6,7 @@ This is a [buffalo](github.com/gobuffalo/buffalo) sender for the [Sendgrid](http
 
 In your `mailers.go`
 
-```
+```go
 import (
     ... 
     ssender "github.com/paganotoni/sendgrid-sender"
