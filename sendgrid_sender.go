@@ -2,7 +2,10 @@ package sender
 
 import (
 	"errors"
+	"fmt"
 	"os"
+
+	nmail "net/mail"
 
 	"github.com/gobuffalo/buffalo/mail"
 	sendgrid "github.com/sendgrid/sendgrid-go"
@@ -29,12 +32,20 @@ func (ps SendgridSender) Send(m mail.Message) error {
 	}
 
 	mm := new(smail.SGMailV3)
-	mm.SetFrom(smail.NewEmail("", m.From))
+	from, err := nmail.ParseAddress(m.From)
+	if err != nil {
+		return fmt.Errorf("invalid from (%s): %s", from, err.Error())
+	}
+	mm.SetFrom(smail.NewEmail(from.Name, from.Address))
 	mm.Subject = m.Subject
 
 	p := smail.NewPersonalization()
-	for _, to := range m.To {
-		p.AddTos(smail.NewEmail("", to))
+	for _, toEmail := range m.To {
+		to, err := nmail.ParseAddress(toEmail)
+		if err != nil {
+			return fmt.Errorf("invalid to (%s): %s", toEmail, err.Error())
+		}
+		p.AddTos(smail.NewEmail(to.Name, to.Address))
 	}
 
 	html := smail.NewContent("text/html", m.Bodies[0].Content)
@@ -42,7 +53,7 @@ func (ps SendgridSender) Send(m mail.Message) error {
 	mm.AddPersonalizations(p)
 	mm.AddContent(text, html)
 
-	_, err := ps.client.Send(mm)
+	_, err = ps.client.Send(mm)
 	return err
 }
 
