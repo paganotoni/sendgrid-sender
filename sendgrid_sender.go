@@ -53,7 +53,11 @@ func (ps SendgridSender) Send(m mail.Message) error {
 	mm.AddPersonalizations(p)
 	mm.AddContent(text, html)
 
-	_, err = ps.client.Send(mm)
+	response, err := ps.client.Send(mm)
+	if response.StatusCode != 202 {
+		return fmt.Errorf("Error sending email, code %v body %v", response.StatusCode, response.Body)
+	}
+	
 	return err
 }
 
