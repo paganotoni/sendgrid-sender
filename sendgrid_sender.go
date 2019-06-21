@@ -1,6 +1,7 @@
 package sender
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -31,33 +32,16 @@ func (ps SendgridSender) Send(m mail.Message) error {
 		return ps.TestSender.Send(m)
 	}
 
-	mm := new(smail.SGMailV3)
-	from, err := nmail.ParseAddress(m.From)
+	mm, err := buildMail(m)
 	if err != nil {
-		return fmt.Errorf("invalid from (%s): %s", from, err.Error())
+		return err
 	}
-	mm.SetFrom(smail.NewEmail(from.Name, from.Address))
-	mm.Subject = m.Subject
-
-	p := smail.NewPersonalization()
-	for _, toEmail := range m.To {
-		to, err := nmail.ParseAddress(toEmail)
-		if err != nil {
-			return fmt.Errorf("invalid to (%s): %s", toEmail, err.Error())
-		}
-		p.AddTos(smail.NewEmail(to.Name, to.Address))
-	}
-
-	html := smail.NewContent("text/html", m.Bodies[0].Content)
-	text := smail.NewContent("text/plain", m.Bodies[1].Content)
-	mm.AddPersonalizations(p)
-	mm.AddContent(text, html)
 
 	response, err := ps.client.Send(mm)
 	if response.StatusCode != 202 {
 		return fmt.Errorf("Error sending email, code %v body %v", response.StatusCode, response.Body)
 	}
-	
+
 	return err
 }
 
@@ -69,4 +53,50 @@ func NewSendgridSender(APIKey string) SendgridSender {
 		client:     client,
 		TestSender: mocksmtp.New(),
 	}
+}
+
+func buildMail(m mail.Message) (*smail.SGMailV3, error) {
+	mm := new(smail.SGMailV3)
+	from, err := nmail.ParseAddress(m.From)
+	if err != nil {
+		return &smail.SGMailV3{}, fmt.Errorf("invalid from (%s): %s", from, err.Error())
+	}
+	mm.SetFrom(smail.NewEmail(from.Name, from.Address))
+	mm.Subject = m.Subject
+
+	p := smail.NewPersonalization()
+	for _, toEmail := range m.To {
+		to, err := nmail.ParseAddress(toEmail)
+		if err != nil {
+			return &smail.SGMailV3{}, fmt.Errorf("invalid to (%s): %s", toEmail, err.Error())
+		}
+		p.AddTos(smail.NewEmail(to.Name, to.Address))
+	}
+
+	html := smail.NewContent("text/html", m.Bodies[0].Content)
+	text := smail.NewContent("text/plain", m.Bodies[1].Content)
+	mm.AddPersonalizations(p)
+	mm.AddContent(text, html)
+
+	for _, a := range m.Attachments {
+		b := new(bytes.Buffer)
+		if n, err := b.ReadFrom(a.Reader); err != nil {
+			return &smail.SGMailV3{}, fmt.Errorf("Error attaching file: n %v error %v", n, err)
+		}
+
+		disposition := "attachment"
+		if a.Embedded {
+			disposition = "inline"
+		}
+
+		attachment := smail.NewAttachment()
+		attachment.SetFilename(a.Name)
+		attachment.SetContentID(a.Name)
+		attachment.SetContent(b.String())
+		attachment.SetType(a.ContentType)
+		attachment.SetDisposition(disposition)
+		mm.AddAttachment(attachment)
+	}
+
+	return mm, nil
 }
