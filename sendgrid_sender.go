@@ -83,7 +83,6 @@ func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 		if n, err := b.ReadFrom(a.Reader); err != nil {
 			return &smail.SGMailV3{}, fmt.Errorf("Error attaching file: n %v error %v", n, err)
 		}
-
 		disposition := "attachment"
 		if a.Embedded {
 			disposition = "inline"
