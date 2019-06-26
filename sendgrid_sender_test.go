@@ -138,3 +138,51 @@ func Test_build_Mail(t *testing.T) {
 
 	}
 }
+
+func Test_build_Mail_Custom_Args(t *testing.T) {
+	a := require.New(t)
+	m := mail.NewMessage()
+
+	m.From = "tatan@test.com"
+	m.Subject = "Test Mail"
+	m.To = []string{"email@test.com", "anotheremail@test.com"}
+	m.Bodies = []mail.Body{
+		mail.Body{
+			Content:     "<p>Test Content of mail</p>",
+			ContentType: "text/html",
+		},
+
+		mail.Body{
+			Content:     "Test Content of mail",
+			ContentType: "text/plain",
+		},
+	}
+	m.Attachments = []mail.Attachment{
+		mail.Attachment{
+			Name:        "test_file.pdf",
+			Reader:      bytes.NewReader([]byte("TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gQ3JhcyBwdW12")),
+			ContentType: "application/pdf",
+			Embedded:    false,
+		},
+		mail.Attachment{
+			Name:        "test_image.png",
+			Reader:      bytes.NewReader([]byte("R29zIGxvdmVzIHlvdQ==")),
+			ContentType: "image/png",
+			Embedded:    true,
+		},
+	}
+
+	mm, err := buildMail(m, map[string]string{"custom_key_0": "custom_value_0", "custom_key_1": "custom_value_1"})
+
+	a.NoError(err)
+	a.Equal(2, len(mm.Personalizations[0].CustomArgs))
+	a.Equal("custom_value_0", mm.Personalizations[0].CustomArgs["custom_key_0"])
+	a.Equal("custom_value_1", mm.Personalizations[0].CustomArgs["custom_key_1"])
+
+	mm, err = buildMail(m)
+
+	a.NoError(err)
+	a.Equal(0, len(mm.Personalizations[0].CustomArgs))
+	a.Equal("", mm.Personalizations[0].CustomArgs["custom_key_0"])
+	a.Equal("", mm.Personalizations[0].CustomArgs["custom_key_1"])
+}
