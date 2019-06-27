@@ -24,38 +24,37 @@ And then in your mailers you would do the same `sender.Send(m)` as this sender m
 
 #### Add Custom Args
 
-If you want to send a mail with `custom args`, you need to add it into `mail.Message.Data` as `map[string]interface{}` this will be into `mail.Message.Personalizations` field :
+To add custom args, you must add values using `CustomArgs` type and add it into Message.Data ussing `CustomArgsKey` key
+
+```go
+CustomArgsKey = "sendgrid_custom_args_key"
+...
+type CustomArgs map[string]string
+```
+
+#### How to implement custom args 
 
 ```go
 import (
-    ... 
+	...
     ssender "github.com/paganotoni/sendgrid-sender"
-    bmail "github.com/gobuffalo/buffalo/mail"
 )
 
-var sender mail.Sender
-
-func init() {
-    APIKey := envy.Get("SENDGRID_API_KEY", "")
+func main() {
+	APIKey := envy.Get("SENDGRID_API_KEY", "")
     sender = ssender.NewSendgridSender(APIKey)
-    ...
-    message := bmail.NewMessage()
-    ...
-    customArgs := map[string]interface{}{
+
+	m := mail.NewMessage()
+	...
+    m.Data[ssender.CustomArgsKey] = ssender.CustomArgs{
         "custom_arg_0": "custom_value_0",
-        "custom_arg_1": 100,
-        "custom_arg_2": []string{"val_0", "val_1", "val_2"},
-        "custom_arg_3": map[string]string{
-            "firstName": "John",
-            "lastName":  "Smith",
-            "age":       "24",
-            },
+        "custom_arg_1": "custom_value_1",
         ...
     }
 
-    message.Data = customArgs
-    ...
-
+    if err := sender.Send(m); err != nil{
+        ...
+    }
 }
 ```
 
