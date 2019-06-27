@@ -157,6 +157,7 @@ func Test_build_Mail_Custom_Args(t *testing.T) {
 			ContentType: "text/plain",
 		},
 	}
+	m.Data = map[string]interface{}{"custom_key_0": "custom_value_0", "custom_key_1": "custom_value_1"}
 	m.Attachments = []mail.Attachment{
 		mail.Attachment{
 			Name:        "test_file.pdf",
@@ -172,13 +173,14 @@ func Test_build_Mail_Custom_Args(t *testing.T) {
 		},
 	}
 
-	mm, err := buildMail(m, map[string]string{"custom_key_0": "custom_value_0", "custom_key_1": "custom_value_1"})
+	mm, err := buildMail(m)
 
 	a.NoError(err)
 	a.Equal(2, len(mm.Personalizations[0].CustomArgs))
 	a.Equal("custom_value_0", mm.Personalizations[0].CustomArgs["custom_key_0"])
 	a.Equal("custom_value_1", mm.Personalizations[0].CustomArgs["custom_key_1"])
 
+	m.Data = map[string]interface{}{}
 	mm, err = buildMail(m)
 
 	a.NoError(err)

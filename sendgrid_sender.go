@@ -23,7 +23,7 @@ type SendgridSender struct {
 
 //Send sends an email to Sendgrid for delivery, it assumes
 //bodies[0] is HTML body and bodies[1] is text.
-func (ps SendgridSender) Send(m mail.Message, customArgs ...map[string]string) error {
+func (ps SendgridSender) Send(m mail.Message) error {
 	if len(m.Bodies) < 2 {
 		return errors.New("you must specify at least 2 bodies HTML and plain text")
 	}
@@ -55,7 +55,7 @@ func NewSendgridSender(APIKey string) SendgridSender {
 	}
 }
 
-func buildMail(m mail.Message, customArgs ...map[string]string) (*smail.SGMailV3, error) {
+func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 	mm := new(smail.SGMailV3)
 	from, err := nmail.ParseAddress(m.From)
 	if err != nil {
@@ -73,10 +73,8 @@ func buildMail(m mail.Message, customArgs ...map[string]string) (*smail.SGMailV3
 		p.AddTos(smail.NewEmail(to.Name, to.Address))
 	}
 
-	for _, mapVal := range customArgs {
-		for k, v := range mapVal {
-			p.SetCustomArg(k, v)
-		}
+	for k, v := range m.Data {
+		p.SetCustomArg(k, v.(string))
 	}
 
 	html := smail.NewContent("text/html", m.Bodies[0].Content)
