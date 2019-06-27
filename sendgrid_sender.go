@@ -74,7 +74,7 @@ func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 	}
 
 	for k, v := range m.Data {
-		p.SetCustomArg(k, v.(string))
+		p.SetCustomArg(k, fmt.Sprintf("%v", v))
 	}
 
 	html := smail.NewContent("text/html", m.Bodies[0].Content)

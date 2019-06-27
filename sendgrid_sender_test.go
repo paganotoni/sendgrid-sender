@@ -157,7 +157,17 @@ func Test_build_Mail_Custom_Args(t *testing.T) {
 			ContentType: "text/plain",
 		},
 	}
-	m.Data = map[string]interface{}{"custom_key_0": "custom_value_0", "custom_key_1": "custom_value_1"}
+	m.Data = map[string]interface{}{
+		"custom_key_0": "custom_value_0",
+		"custom_key_1": "custom_value_1",
+		"custom_key_2": []string{"val_2", "val_3", "val_4"},
+		"custom_key_3": 25,
+		"custom_key_4": map[string]string{
+			"firstName": "John",
+			"lastName":  "Smith",
+			"age":       "24",
+		},
+	}
 	m.Attachments = []mail.Attachment{
 		mail.Attachment{
 			Name:        "test_file.pdf",
@@ -176,9 +186,14 @@ func Test_build_Mail_Custom_Args(t *testing.T) {
 	mm, err := buildMail(m)
 
 	a.NoError(err)
-	a.Equal(2, len(mm.Personalizations[0].CustomArgs))
+	a.Equal(5, len(mm.Personalizations[0].CustomArgs))
 	a.Equal("custom_value_0", mm.Personalizations[0].CustomArgs["custom_key_0"])
 	a.Equal("custom_value_1", mm.Personalizations[0].CustomArgs["custom_key_1"])
+	a.Equal("[val_2 val_3 val_4]", mm.Personalizations[0].CustomArgs["custom_key_2"])
+	a.Equal("25", mm.Personalizations[0].CustomArgs["custom_key_3"])
+	a.Contains(mm.Personalizations[0].CustomArgs["custom_key_4"], "firstName:John")
+	a.Contains(mm.Personalizations[0].CustomArgs["custom_key_4"], "lastName:Smith")
+	a.Contains(mm.Personalizations[0].CustomArgs["custom_key_4"], "age:24")
 
 	m.Data = map[string]interface{}{}
 	mm, err = buildMail(m)
