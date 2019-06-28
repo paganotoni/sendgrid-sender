@@ -32,7 +32,9 @@ CustomArgsKey = "sendgrid_custom_args_key"
 type CustomArgs map[string]string
 ```
 
-#### How to implement custom args 
+#### How to use Sendgrid customargs
+
+One thing you could need is to add customArgs to the message you're sending through sendgrid, to do this you would be using `SetCustomArgs` function, passing your `mail.Message`with the `CustomArgs` you want to add.
 
 ```go
 import (
@@ -45,12 +47,12 @@ func main() {
     sender = ssender.NewSendgridSender(APIKey)
 
 	m := mail.NewMessage()
-	...
-    m.Data[ssender.CustomArgsKey] = ssender.CustomArgs{
+    ...
+    ssender.SetCustomArgs(m, ssender.CustomArgs{
         "custom_arg_0": "custom_value_0",
         "custom_arg_1": "custom_value_1",
         ...
-    }
+    })
 
     if err := sender.Send(m); err != nil{
         ...

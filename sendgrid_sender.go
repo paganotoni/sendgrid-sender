@@ -16,7 +16,7 @@ import (
 
 const (
 	// CustomArgsKey is used as default key to search the custom args into Message.Data
-	CustomArgsKey = "sendgrid_custom_args_key"
+	customArgsKey = "sendgrid_custom_args_key"
 )
 
 // CustomArgs is the type that must have Message.Data[CustomArgsKey]
@@ -63,6 +63,11 @@ func NewSendgridSender(APIKey string) SendgridSender {
 	}
 }
 
+// SetCustomArgs set the custom args in the message Data field using CustomArgsKey.
+func SetCustomArgs(m mail.Message, customArgs CustomArgs) {
+	m.Data[customArgsKey] = customArgs
+}
+
 func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 	mm := new(smail.SGMailV3)
 	from, err := nmail.ParseAddress(m.From)
@@ -81,7 +86,7 @@ func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 		p.AddTos(smail.NewEmail(to.Name, to.Address))
 	}
 
-	if customArgs, ok := m.Data[CustomArgsKey].(CustomArgs); ok {
+	if customArgs, ok := m.Data[customArgsKey].(CustomArgs); ok {
 		for k, v := range customArgs {
 			p.SetCustomArg(k, v)
 		}

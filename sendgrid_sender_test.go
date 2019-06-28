@@ -157,13 +157,6 @@ func Test_build_Mail_Custom_Args(t *testing.T) {
 			ContentType: "text/plain",
 		},
 	}
-	m.Data = map[string]interface{}{
-		CustomArgsKey: CustomArgs{
-			"custom_key_0": "custom_value_0",
-			"custom_key_1": "custom_value_1",
-			"custom_key_2": "[val_2 val_3 val_4]",
-		},
-	}
 	m.Attachments = []mail.Attachment{
 		mail.Attachment{
 			Name:        "test_file.pdf",
@@ -178,6 +171,13 @@ func Test_build_Mail_Custom_Args(t *testing.T) {
 			Embedded:    true,
 		},
 	}
+
+	m.Data = map[string]interface{}{}
+	SetCustomArgs(m, CustomArgs{
+		"custom_key_0": "custom_value_0",
+		"custom_key_1": "custom_value_1",
+		"custom_key_2": "[val_2 val_3 val_4]",
+	})
 
 	mm, err := buildMail(m)
 
