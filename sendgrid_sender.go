@@ -14,6 +14,14 @@ import (
 	"github.com/stanislas-m/mocksmtp"
 )
 
+const (
+	// CustomArgsKey is used as default key to search the custom args into Message.Data
+	CustomArgsKey = "sendgrid_custom_args_key"
+)
+
+// CustomArgs is the type that must have Message.Data[CustomArgsKey]
+type CustomArgs map[string]string
+
 //SendgridSender implements the Sender interface to be used
 //within buffalo mailer generated package.
 type SendgridSender struct {
@@ -71,6 +79,12 @@ func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 			return &smail.SGMailV3{}, fmt.Errorf("invalid to (%s): %s", toEmail, err.Error())
 		}
 		p.AddTos(smail.NewEmail(to.Name, to.Address))
+	}
+
+	if customArgs, ok := m.Data[CustomArgsKey].(CustomArgs); ok {
+		for k, v := range customArgs {
+			p.SetCustomArg(k, v)
+		}
 	}
 
 	html := smail.NewContent("text/html", m.Bodies[0].Content)
