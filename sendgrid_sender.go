@@ -2,6 +2,7 @@ package sender
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
@@ -110,7 +111,10 @@ func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 		attachment := smail.NewAttachment()
 		attachment.SetFilename(a.Name)
 		attachment.SetContentID(a.Name)
-		attachment.SetContent(b.String())
+
+		encoded := base64.StdEncoding.EncodeToString(b.Bytes())
+		attachment.SetContent(encoded)
+
 		attachment.SetType(a.ContentType)
 		attachment.SetDisposition(disposition)
 		mm.AddAttachment(attachment)
