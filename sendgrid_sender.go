@@ -110,9 +110,16 @@ func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 	}
 
 	mm.AddPersonalizations(p)
+	contents := []*smail.Content{}
 	for _, b := range m.Bodies {
-		mm.AddContent(smail.NewContent(b.ContentType, m.Bodies[0].Content))
+		if b.ContentType == "text/plain" {
+			contents = append([]*smail.Content{smail.NewContent(b.ContentType, b.Content)}, contents...)
+			continue
+		}
+		contents = append(contents, smail.NewContent(b.ContentType, m.Bodies[0].Content))
 	}
+
+	mm.AddContent(contents...)
 
 	for _, a := range m.Attachments {
 		b := new(bytes.Buffer)
