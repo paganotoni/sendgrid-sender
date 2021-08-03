@@ -87,16 +87,32 @@ func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 		p.AddTos(smail.NewEmail(to.Name, to.Address))
 	}
 
+	for _, toEmail := range m.CC {
+		to, err := nmail.ParseAddress(toEmail)
+		if err != nil {
+			return &smail.SGMailV3{}, fmt.Errorf("invalid to (%s): %s", toEmail, err.Error())
+		}
+		p.AddCCs(smail.NewEmail(to.Name, to.Address))
+	}
+
+	for _, toEmail := range m.Bcc {
+		to, err := nmail.ParseAddress(toEmail)
+		if err != nil {
+			return &smail.SGMailV3{}, fmt.Errorf("invalid to (%s): %s", toEmail, err.Error())
+		}
+		p.AddBCCs(smail.NewEmail(to.Name, to.Address))
+	}
+
 	if customArgs, ok := m.Data[customArgsKey].(CustomArgs); ok {
 		for k, v := range customArgs {
 			p.SetCustomArg(k, v)
 		}
 	}
 
-	html := smail.NewContent("text/html", m.Bodies[0].Content)
-	text := smail.NewContent("text/plain", m.Bodies[1].Content)
 	mm.AddPersonalizations(p)
-	mm.AddContent(text, html)
+	for _, b := range m.Bodies {
+		mm.AddContent(smail.NewContent(b.ContentType, m.Bodies[0].Content))
+	}
 
 	for _, a := range m.Attachments {
 		b := new(bytes.Buffer)
