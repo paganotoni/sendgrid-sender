@@ -24,12 +24,12 @@ func Test_build_Mail(t *testing.T) {
 			From:    "tatan@test.com",
 			To:      []string{"email@test.com", "anotheremail@test.com"},
 			Bodies: []mail.Body{
-				mail.Body{
+				{
 					Content:     "<p>Test Content of mail</p>",
 					ContentType: "text/html",
 				},
 
-				mail.Body{
+				{
 					Content:     "Test Content of mail",
 					ContentType: "text/plain",
 				},
@@ -42,12 +42,12 @@ func Test_build_Mail(t *testing.T) {
 			From:    "",
 			To:      []string{"email@test.com", "anotheremail@test.com"},
 			Bodies: []mail.Body{
-				mail.Body{
+				{
 					Content:     "<p>Test Content of mail</p>",
 					ContentType: "text/html",
 				},
 
-				mail.Body{
+				{
 					Content:     "Test Content of mail",
 					ContentType: "text/plain",
 				},
@@ -60,12 +60,12 @@ func Test_build_Mail(t *testing.T) {
 			From:    "tatan@test.com",
 			To:      []string{"", "anotheremail@test.com"},
 			Bodies: []mail.Body{
-				mail.Body{
+				{
 					Content:     "<p>Test Content of mail</p>",
 					ContentType: "text/html",
 				},
 
-				mail.Body{
+				{
 					Content:     "Test Content of mail",
 					ContentType: "text/plain",
 				},
@@ -79,24 +79,24 @@ func Test_build_Mail(t *testing.T) {
 			From:    "tatan@test.com",
 			To:      []string{"email@test.com", "anotheremail@test.com"},
 			Bodies: []mail.Body{
-				mail.Body{
+				{
 					Content:     "<p>Test Content of mail</p>",
 					ContentType: "text/html",
 				},
 
-				mail.Body{
+				{
 					Content:     "Test Content of mail",
 					ContentType: "text/plain",
 				},
 			},
 			Attachments: []mail.Attachment{
-				mail.Attachment{
+				{
 					Name:        "test_file.pdf",
 					Reader:      bytes.NewReader([]byte("TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gQ3JhcyBwdW12")),
 					ContentType: "application/pdf",
 					Embedded:    false,
 				},
-				mail.Attachment{
+				{
 					Name:        "test_image.png",
 					Reader:      bytes.NewReader([]byte("R29zIGxvdmVzIHlvdQ==")),
 					ContentType: "image/png",
@@ -147,24 +147,24 @@ func Test_build_Mail_Custom_Args(t *testing.T) {
 	m.Subject = "Test Mail"
 	m.To = []string{"email@test.com", "anotheremail@test.com"}
 	m.Bodies = []mail.Body{
-		mail.Body{
+		{
 			Content:     "<p>Test Content of mail</p>",
 			ContentType: "text/html",
 		},
 
-		mail.Body{
+		{
 			Content:     "Test Content of mail",
 			ContentType: "text/plain",
 		},
 	}
 	m.Attachments = []mail.Attachment{
-		mail.Attachment{
+		{
 			Name:        "test_file.pdf",
 			Reader:      bytes.NewReader([]byte("TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyIGFkaXBpc2NpbmcgZWxpdC4gQ3JhcyBwdW12")),
 			ContentType: "application/pdf",
 			Embedded:    false,
 		},
-		mail.Attachment{
+		{
 			Name:        "test_image.png",
 			Reader:      bytes.NewReader([]byte("R29zIGxvdmVzIHlvdQ==")),
 			ContentType: "image/png",
@@ -195,4 +195,34 @@ func Test_build_Mail_Custom_Args(t *testing.T) {
 	a.Equal("", mm.Personalizations[0].CustomArgs["custom_key_0"])
 	a.Equal("", mm.Personalizations[0].CustomArgs["custom_key_1"])
 	a.Equal("", mm.Personalizations[0].CustomArgs["custom_key_2"])
+}
+
+func Test_build_Mail_Custom_Headers(t *testing.T) {
+	a := require.New(t)
+	m := mail.NewMessage()
+
+	m.From = "digi@charat.com"
+	m.Subject = "Test Header Mail"
+	m.To = []string{"email@test.com", "anotheremail@test.com"}
+	m.Headers = map[string]string{
+		"x-provider": "sendgrid",
+		"x-header":   "testing_header",
+	}
+	m.Bodies = []mail.Body{
+		{
+			Content:     "<p>Test Content of mail</p>",
+			ContentType: "text/html",
+		},
+
+		{
+			Content:     "Test Content of mail",
+			ContentType: "text/plain",
+		},
+	}
+
+	mm, err := buildMail(m)
+	a.NoError(err)
+	a.Equal(2, len(mm.Personalizations[0].Headers))
+	a.Equal("sendgrid", mm.Personalizations[0].Headers["x-provider"])
+	a.Equal("testing_header", mm.Personalizations[0].Headers["x-header"])
 }

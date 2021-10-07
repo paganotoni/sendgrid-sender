@@ -71,10 +71,12 @@ func SetCustomArgs(m mail.Message, customArgs CustomArgs) {
 
 func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 	mm := new(smail.SGMailV3)
+
 	from, err := nmail.ParseAddress(m.From)
 	if err != nil {
 		return &smail.SGMailV3{}, fmt.Errorf("invalid from (%s): %s", from, err.Error())
 	}
+
 	mm.SetFrom(smail.NewEmail(from.Name, from.Address))
 	mm.Subject = m.Subject
 
@@ -109,7 +111,12 @@ func buildMail(m mail.Message) (*smail.SGMailV3, error) {
 		}
 	}
 
+	for k, v := range m.Headers {
+		p.SetHeader(k, v)
+	}
+
 	mm.AddPersonalizations(p)
+
 	contents := []*smail.Content{}
 	for _, b := range m.Bodies {
 		if b.ContentType == "text/plain" {
