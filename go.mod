@@ -83,7 +83,7 @@ require (
 	golang.org/x/term v0.17.0 // indirect
 	google.golang.org/appengine v1.6.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/yaml.v2 v2.2.2 // indirect
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
